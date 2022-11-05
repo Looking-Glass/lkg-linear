@@ -3,7 +3,8 @@ import { Importer, ImportResult } from "../../types";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const j2m = require("jira2md");
 
-type AsanaPriority = "High" | "Med" | "Low";
+type AsanaPriority = "High" | "Medium" | "Low";
+type AsanaSwimlane = "To Do" | "In Progress" | "In Review" | "In QA" | "Blocked" | "Done";
 
 interface AsanaIssueType {
   "Task ID": string;
@@ -18,8 +19,10 @@ interface AsanaIssueType {
   Tags: string;
   Notes: string;
   Projects: string;
+  "Section/Column": AsanaSwimlane;
+  Effort: string;
   "Parent Task": string;
-  Priority: AsanaPriority;
+  "Priority Rank": AsanaPriority;
 }
 
 /**
@@ -62,6 +65,7 @@ export class AsanaCsvImporter implements Importer {
 
     for (const row of data) {
       const title = row.Name;
+
       if (!title) {
         continue;
       }
@@ -70,7 +74,7 @@ export class AsanaCsvImporter implements Importer {
       const mdDesc = j2m.to_markdown(row.Notes);
       const description = url ? `${mdDesc}\n\n[View original issue in Asana](${url})` : mdDesc;
 
-      const priority = mapPriority(row.Priority);
+      const priority = mapPriority(row["Priority Rank"]);
 
       const dueDate = row["Due Date"] ? new Date(row["Due Date"]) : undefined;
 
@@ -78,7 +82,10 @@ export class AsanaCsvImporter implements Importer {
 
       const assigneeId = row.Assignee && row.Assignee.length > 0 ? row.Assignee : undefined;
 
-      const status = !!row["Completed At"] ? "Done" : "Todo";
+      // const status = !!row["Completed At"] ? "Done" : "Todo"; // default behavior
+      const status = mapStatus(row["Section/Column"]); // custom GSE behavior
+
+      const estimate = parseInt(row.Effort) || undefined;
 
       const labels = tags.filter(tag => !!tag);
 
@@ -91,6 +98,7 @@ export class AsanaCsvImporter implements Importer {
         assigneeId,
         labels,
         dueDate,
+        estimate,
       });
 
       for (const lab of labels) {
@@ -114,8 +122,19 @@ export class AsanaCsvImporter implements Importer {
 const mapPriority = (input: AsanaPriority): number => {
   const priorityMap = {
     High: 2,
-    Med: 3,
+    Medium: 3,
     Low: 4,
   };
   return priorityMap[input] || 0;
+};
+
+const mapStatus = (input: AsanaSwimlane): string => {
+  const statusMap = {
+    "To Do": "Todo",
+    "In Progress": "In Progress",
+    "In Review": "In Review",
+    "In QA": "In Testing",
+    Done: "Done",
+  };
+  return statusMap[input] || "Backlog";
 };

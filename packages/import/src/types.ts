@@ -16,6 +16,8 @@ export interface Issue {
   labels?: string[];
   /** Link to original issue. */
   url?: string;
+  /** Raw estimate value. */
+  estimate?: number;
   /** When the issue was created. */
   createdAt?: Date;
   /** When the issue is due. This is a date string of the format yyyy-MM-dd. */

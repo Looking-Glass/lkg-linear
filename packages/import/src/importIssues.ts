@@ -32,12 +32,12 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
   const importData = await importer.import();
 
   const teamsQuery = await client.teams();
-  const viewerQuery = await client.viewer;
+  // const viewerQuery = await client.viewer;
   const usersQuery = await client.users();
 
   const teams = teamsQuery?.nodes ?? [];
   const users = usersQuery?.nodes?.filter(user => user.active) ?? [];
-  const viewer = viewerQuery?.id;
+  // const viewer = viewerQuery?.id;
 
   // Prompt the user to either get or create a team
   const importAnswers = await inquirer.prompt<ImportAnswers>([
@@ -257,16 +257,16 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
       }
     }
 
-    const existingAssigneeId: string | undefined = !!issue.assigneeId
+    const assigneeId: string | undefined = !!issue.assigneeId
       ? existingUserMap[issue.assigneeId.toLowerCase()]
       : undefined;
 
-    const assigneeId: string | undefined =
-      existingAssigneeId || importAnswers.selfAssign
-        ? viewer
-        : !!importAnswers.targetAssignee && importAnswers.targetAssignee.length > 0
-        ? importAnswers.targetAssignee
-        : undefined;
+    // const assigneeId: string | undefined =
+    //   existingAssigneeId || importAnswers.selfAssign
+    //     ? viewer
+    //     : !!importAnswers.targetAssignee && importAnswers.targetAssignee.length > 0
+    //     ? importAnswers.targetAssignee
+    //     : undefined;
 
     const formattedDueDate = issue.dueDate ? format(issue.dueDate, "yyyy-MM-dd") : undefined;
 
@@ -276,6 +276,7 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
       title: issue.title,
       description,
       priority: issue.priority,
+      estimate: issue.estimate,
       labelIds,
       stateId,
       assigneeId,
@@ -283,9 +284,7 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
     });
   }
 
-  console.info(
-    chalk.green(`${importer.name} issues imported to your team: https://linear.app/team/${teamKey}/all`)
-  );
+  console.info(chalk.green(`${importer.name} issues imported to your team: https://linear.app/team/${teamKey}/all`));
 };
 
 // Build comments into issue description
