@@ -55,7 +55,7 @@ export class AsanaCsvImporter implements Importer {
       statuses: {},
     };
 
-    const assignees = Array.from(new Set(data.map(row => row.Assignee)));
+    const assignees = Array.from(new Set(data.map(row => row["Assignee Email"])));
 
     for (const user of assignees) {
       importData.users[user] = {
@@ -80,7 +80,8 @@ export class AsanaCsvImporter implements Importer {
 
       const tags = row.Tags.split(",");
 
-      const assigneeId = row.Assignee && row.Assignee.length > 0 ? row.Assignee : undefined;
+      const assigneeEmail = row["Assignee Email"];
+      const assigneeId = assigneeEmail && assigneeEmail.length > 0 ? assigneeEmail : undefined;
 
       // const status = !!row["Completed At"] ? "Done" : "Todo"; // default behavior
       const status = mapStatus(row["Section/Column"]); // custom GSE behavior

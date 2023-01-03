@@ -214,7 +214,7 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
 
   const existingUserMap = {} as { [name: string]: string };
   for (const user of users) {
-    const userName = user.name?.toLowerCase();
+    const userName = user.email?.toLowerCase();
     if (userName && user.id && !existingUserMap[userName]) {
       existingUserMap[userName] = user.id;
     }
@@ -257,10 +257,11 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
       }
     }
 
-    const assigneeId: string | undefined = !!issue.assigneeId
-      ? existingUserMap[issue.assigneeId.toLowerCase()]
-      : undefined;
+    // const assigneeId: string | undefined = !!issue.assigneeId
+    //   ? existingUserMap[issue.assigneeId.toLowerCase()]
+    //   : undefined;
 
+    const assigneeId = "e92d73be-32b1-40f2-bbcb-e166fa5f1cff";
     // const assigneeId: string | undefined =
     //   existingAssigneeId || importAnswers.selfAssign
     //     ? viewer
@@ -273,7 +274,7 @@ export const importIssues = async (apiKey: string, importer: Importer): Promise<
     await client.issueCreate({
       teamId,
       projectId: projectId as unknown as string,
-      title: issue.title,
+      title: "issue.title",
       description,
       priority: issue.priority,
       estimate: issue.estimate,
